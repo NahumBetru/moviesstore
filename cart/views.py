@@ -4,6 +4,7 @@ from movies.models import Movie
 from .utils import calculate_cart_total
 from .models import Order, Item
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 def index(request):
     cart_total = 0
@@ -27,9 +28,11 @@ def add(request, id):
     cart[id] = request.POST['quantity']
     request.session['cart'] = cart
     return redirect('cart.index')
+
 def clear(request):
     request.session['cart'] = {}
     return redirect('cart.index')
+
 @login_required
 def purchase(request):
     cart = request.session.get('cart', {})
@@ -54,4 +57,12 @@ def purchase(request):
     template_data['title'] = 'Purchase confirmation'
     template_data['order_id'] = order.id
     return render(request, 'cart/purchase.html',
+        {'template_data': template_data})
+
+@login_required
+def orders(request):
+    template_data = {}
+    template_data['title'] = 'Orders'
+    template_data['orders'] = request.user.order_set.all()
+    return render(request, 'accounts/orders.html',
         {'template_data': template_data})
